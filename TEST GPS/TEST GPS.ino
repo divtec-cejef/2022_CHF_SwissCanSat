@@ -1,10 +1,20 @@
 #include <Arduino_MKRGPS.h>
 #include <SPI.h>
+#include <SD.h>
+#include <Wire.h>
 #include <LoRa.h>
+
+File myFile;
 
 int counter = 0;
 
+const int chipSelect = 4;
+
 void setup() {
+
+//======================================================================
+// SETUP GPS
+//======================================================================
   // initialize serial communications and wait for port to open:
   Serial.begin(9600);
   while (!Serial) {
@@ -18,6 +28,10 @@ void setup() {
     while (1);
   }
 
+//======================================================================
+// SETUP LoRa
+//======================================================================
+
   Serial.begin(9600);
   while (!Serial);
 
@@ -27,6 +41,31 @@ void setup() {
     Serial.println("Starting LoRa failed!");
     while (1);
   }
+
+//======================================================================
+// SETUP SD CARD
+//======================================================================
+  Serial.print("Initializing SD card...");
+  if (!SD.begin(chipSelect)) {
+    Serial.println("Card failed, or not present");
+    while (1);
+  }
+  Serial.println("card initialized.");
+
+  File dataFile = SD.open("datalog.txt", FILE_WRITE);
+
+    //écrire les données sur le fichier texte
+    if(dataFile) {
+    dataFile.println("latitude;longitude;ALTITUDE;SPEED;SATELITTES");
+    //fermer le fichier
+    dataFile.close();
+  }
+  else {
+    Serial.println("error opening datalog.txt");
+    while(1);
+  }
+
+    
 }
 
 void loop() {
@@ -58,10 +97,10 @@ void loop() {
 
     Serial.println();
 
-  Serial.print("Sending packet: ");
-  Serial.println(counter);
-
     // send packet
+    Serial.print("Sending packet: ");
+    Serial.println(counter);
+
     LoRa.beginPacket();
     LoRa.print("Location: ");
     LoRa.print(latitude, 7);
@@ -83,8 +122,31 @@ void loop() {
 
     LoRa.endPacket();
 
-    counter++;    
+    counter++;
 
-    delay(1000);
+  File dataFile = SD.open("datalog.txt", FILE_WRITE);
+
+  //écrire les données sur le fichier texte
+    if(dataFile) {
+    dataFile.print(latitude, 7);
+    dataFile.print(";");
+    dataFile.print(longitude, 7);    
+    dataFile.print(";");
+    dataFile.print(altitude);
+    dataFile.print(";");
+    dataFile.print(speed);
+    dataFile.print(";");
+    dataFile.print(satellites);
+
+    dataFile.println();
+    //fermer le fichier
+    dataFile.close();
+  }
+  else {
+    Serial.println("error opening datalog.txt");
+    while(1);
+  }
+    
+    delay(1000);    
   }
 }
