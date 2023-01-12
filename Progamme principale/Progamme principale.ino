@@ -1,15 +1,50 @@
 #include <Wire.h>
 #include <SPI.h>
+#include <SD.h>
 #include "SparkFun_SCD4x_Arduino_Library.h" 
 #include <Adafruit_MS8607.h>
 #include <Adafruit_Sensor.h>
+#include <RTCZero.h>
 
-Adafruit_MS8607 ms8607;
+//MS8607 sensor
+Adafruit_MS8607 ms8607; 
 
-SCD4x SCD41;
+//SCD41 sensor
+SCD4x SCD41; 
+
+//SD card
+File myFile; 
+const int chipSelect = 4;
+
+//RTC 
+RTCZero rtc;
+const byte seconds = 30;
+const byte minutes = 52;
+const byte hours = 10;
+
+const byte day = 12;
+const byte month = 01;
+const byte year = 23;
 
 void setup()
 {
+  //================================================================================
+  //SETUP RTC
+  //================================================================================
+  rtc.begin(); // initialize RTC
+  rtc.setTime(hours, minutes, seconds);
+  rtc.setDate(day, month, year);
+
+//================================================================================
+  //SETUP SD card
+  //================================================================================
+  Serial.print("Initializing SD card...");
+  if (!SD.begin(chipSelect)) {
+    Serial.println("Card failed, or not present");
+    while (1);
+  }
+  Serial.println("card initialized.");
+
   //================================================================================
   //SETUP SCD41
   //================================================================================
@@ -75,6 +110,26 @@ void loop()
     Serial.print("Humidity: ");Serial.print(humidity.relative_humidity); Serial.println(" %rH");
     Serial.print("Pressure: ");Serial.print(pressure.pressure); Serial.print(" hPa");
     Serial.println("");
+
+    //write in SD card
+    File dataFile = SD.open("datalog.txt", FILE_WRITE);
+    if(dataFile) {
+      dataFile.println("CO2 ;Temperature ;Humidity ;Pressure ");
+      dataFile.print(SCD41.getCO2());
+      dataFile.print(" ;");
+      dataFile.print(temp.temperature);
+      dataFile.print(" ;");
+      dataFile.print(humidity.relative_humidity);
+      dataFile.print(" ;");
+      dataFile.print(pressure.pressure);
+      dataFile.println(" ;");
+      dataFile.close();
+    }
+    else {
+      Serial.println("error opening datalog.txt");
+      while(1);
+    }
+
 
    
     delay(1000);
