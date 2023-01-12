@@ -6,6 +6,7 @@
 #include <Adafruit_Sensor.h>
 #include <RTCZero.h>
 #include <Arduino_MKRGPS.h>
+#include <LoRa.h>
 
 //MS8607 sensor
 Adafruit_MS8607 ms8607; 
@@ -26,6 +27,9 @@ const byte hours = 10;
 const byte day = 12;
 const byte month = 01;
 const byte year = 23;
+
+//LoRa
+int counter = 0;
 
 void setup()
 {
@@ -122,6 +126,18 @@ void setup()
     Serial.println("Failed to initialize GPS!");
     while (1);
   }
+  //================================================================================
+  //SETUP LoRa
+  //================================================================================
+  Serial.begin(9600);
+  while (!Serial);
+
+  Serial.println("LoRa Sender");
+
+  if (!LoRa.begin(868E6)) {
+    Serial.println("Starting LoRa failed!");
+    while (1);
+  }
 }
 
 void loop()
@@ -179,6 +195,63 @@ void loop()
     Serial.println(satellites);
 
     Serial.println();
+  
+    Serial.print("Sending packet: ");
+    Serial.println(counter);
+
+    // send packet
+    LoRa.beginPacket();
+     //print Date & Hour
+    LoRa.print(rtc.getDay());
+    LoRa.print("/");
+    LoRa.print(rtc.getMonth());
+    LoRa.print("/");    
+    LoRa.print(rtc.getYear());
+    LoRa.print(" ");
+    LoRa.print(rtc.getHours());
+    LoRa.print(":");     
+    LoRa.print(rtc.getMinutes()); 
+    LoRa.print(":");
+    LoRa.print(rtc.getSeconds());  
+    LoRa.println();
+
+    // print C02 -SCD41
+    LoRa.print(F("CO2(ppm):"));
+    LoRa.print(SCD41.getCO2());
+    LoRa.println();
+
+    // print HUMIDITY,TEMPERATURE -MS8607   
+    sensors_event_t temp, pressure, humidity;
+    ms8607.getEvent(&pressure, &temp, &humidity);
+    LoRa.print("Temperature: ");LoRa.print(temp.temperature); LoRa.println(" degrees C");
+    LoRa.print("Humidity: ");LoRa.print(humidity.relative_humidity); LoRa.println(" %rH");
+    LoRa.print("Pressure: ");LoRa.print(pressure.pressure); LoRa.print(" hPa");
+    LoRa.println("");
+
+    // print GPS values
+    LoRa.print("Location: ");
+    LoRa.print(latitude, 7);
+    LoRa.print(", ");
+    LoRa.println(longitude, 7);
+
+    LoRa.print("Altitude: ");
+    LoRa.print(altitude);
+    LoRa.println("m");
+
+    LoRa.print("Ground speed: ");
+    LoRa.print(speed);
+    LoRa.println(" km/h");
+
+    LoRa.print("Number of satellites: ");
+    LoRa.println(satellites);
+
+    LoRa.println();
+  
+    LoRa.print("Sending packet: ");
+    LoRa.println(counter);
+    LoRa.endPacket();
+
+    counter++;
   
     //write in SD card
     File dataFile = SD.open("datalog.txt", FILE_WRITE);
