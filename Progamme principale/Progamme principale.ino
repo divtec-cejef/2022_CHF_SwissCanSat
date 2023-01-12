@@ -45,6 +45,19 @@ void setup()
     while (1);
   }
   Serial.println("card initialized.");
+  
+  File dataFile = SD.open("datalog.txt", FILE_WRITE);
+
+  //écrire les données sur le fichier texte
+  if(dataFile) {
+  dataFile.println("CO2 ;Temperature ;Humidity ;Pressure ;Latitude ;Longitude ;Altitude ;Speed ;Satelittes ");
+  //fermer le fichier
+  dataFile.close();
+  }
+  else {
+    Serial.println("error opening datalog.txt");
+    while(1);
+  }
 
   //================================================================================
   //SETUP SCD41
@@ -156,7 +169,6 @@ void loop()
     //write in SD card
     File dataFile = SD.open("datalog.txt", FILE_WRITE);
     if(dataFile) {
-      dataFile.println("CO2 ;Temperature ;Humidity ;Pressure ");
       dataFile.print(SCD41.getCO2());
       dataFile.print(" ;");
       dataFile.print(temp.temperature);
