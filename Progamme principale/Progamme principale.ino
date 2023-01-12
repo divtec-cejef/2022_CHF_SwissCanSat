@@ -126,6 +126,20 @@ void setup()
 
 void loop()
 {
+  
+    //print Date & Hour
+    Serial.print(rtc.getDay());
+    Serial.print("/");
+    Serial.print(rtc.getMonth());
+    Serial.print("/");    
+    Serial.print(rtc.getYear());
+    Serial.print(" ");
+    Serial.print(rtc.getHours());
+    Serial.print(":");     
+    Serial.print(rtc.getMinutes()); 
+    Serial.print(":");
+    Serial.print(rtc.getSeconds());  
+    Serial.println();
 
     // print C02 -SCD41
     Serial.print(F("CO2(ppm):"));
@@ -169,6 +183,18 @@ void loop()
     //write in SD card
     File dataFile = SD.open("datalog.txt", FILE_WRITE);
     if(dataFile) {
+      dataFile.print(rtc.getDay());
+      dataFile.print("/");
+      dataFile.print(rtc.getMonth());
+      dataFile.print("/");    
+      dataFile.print(rtc.getYear());
+      dataFile.print(" ");
+      dataFile.print(rtc.getHours());
+      dataFile.print(":");     
+      dataFile.print(rtc.getMinutes()); 
+      dataFile.print(":");
+      dataFile.print(rtc.getSeconds());
+      dataFile.print(" ;");
       dataFile.print(SCD41.getCO2());
       dataFile.print(" ;");
       dataFile.print(temp.temperature);
