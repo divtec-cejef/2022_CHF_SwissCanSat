@@ -221,8 +221,6 @@ void loop()
     LoRa.println();
 
     // print HUMIDITY,TEMPERATURE -MS8607   
-    sensors_event_t temp, pressure, humidity;
-    ms8607.getEvent(&pressure, &temp, &humidity);
     LoRa.print("Temperature: ");LoRa.print(temp.temperature); LoRa.println(" degrees C");
     LoRa.print("Humidity: ");LoRa.print(humidity.relative_humidity); LoRa.println(" %rH");
     LoRa.print("Pressure: ");LoRa.print(pressure.pressure); LoRa.print(" hPa");
@@ -291,6 +289,5 @@ void loop()
       Serial.println("error opening datalog.txt");
       while(1);
     }
-    
     delay(1000);
 }
