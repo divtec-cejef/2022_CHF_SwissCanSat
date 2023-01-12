@@ -129,8 +129,6 @@ void loop()
       Serial.println("error opening datalog.txt");
       while(1);
     }
-
-
-   
+    
     delay(1000);
 }
