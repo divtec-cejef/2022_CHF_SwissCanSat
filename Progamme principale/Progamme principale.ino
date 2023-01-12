@@ -5,6 +5,7 @@
 #include <Adafruit_MS8607.h>
 #include <Adafruit_Sensor.h>
 #include <RTCZero.h>
+#include <Arduino_MKRGPS.h>
 
 //MS8607 sensor
 Adafruit_MS8607 ms8607; 
@@ -35,7 +36,7 @@ void setup()
   rtc.setTime(hours, minutes, seconds);
   rtc.setDate(day, month, year);
 
-//================================================================================
+  //================================================================================
   //SETUP SD card
   //================================================================================
   Serial.print("Initializing SD card...");
@@ -93,6 +94,21 @@ void setup()
     case MS8607_PRESSURE_RESOLUTION_OSR_8192: Serial.println("8192"); break;
   }
   Serial.println("");
+  //================================================================================
+  //SETUP GPS
+  //================================================================================
+  // initialize serial communications and wait for port to open:
+  Serial.begin(9600);
+  while (!Serial) {
+    ; // wait for serial port to connect. Needed for native USB port only
+  }
+
+  // If you are using the MKR GPS as shield, change the next line to pass
+  // the GPS_MODE_SHIELD parameter to the GPS.begin(...)
+  if (!GPS.begin()) {
+    Serial.println("Failed to initialize GPS!");
+    while (1);
+  }
 }
 
 void loop()
@@ -111,6 +127,32 @@ void loop()
     Serial.print("Pressure: ");Serial.print(pressure.pressure); Serial.print(" hPa");
     Serial.println("");
 
+    //  print GPS -ASX00017
+    float latitude   = GPS.latitude();
+    float longitude  = GPS.longitude();
+    float altitude   = GPS.altitude();
+    float speed      = GPS.speed();
+    int   satellites = GPS.satellites();
+
+    // print GPS values
+    Serial.print("Location: ");
+    Serial.print(latitude, 7);
+    Serial.print(", ");
+    Serial.println(longitude, 7);
+
+    Serial.print("Altitude: ");
+    Serial.print(altitude);
+    Serial.println("m");
+
+    Serial.print("Ground speed: ");
+    Serial.print(speed);
+    Serial.println(" km/h");
+
+    Serial.print("Number of satellites: ");
+    Serial.println(satellites);
+
+    Serial.println();
+  
     //write in SD card
     File dataFile = SD.open("datalog.txt", FILE_WRITE);
     if(dataFile) {
@@ -123,6 +165,15 @@ void loop()
       dataFile.print(" ;");
       dataFile.print(pressure.pressure);
       dataFile.println(" ;");
+      dataFile.print(latitude, 7);
+      dataFile.println(" ;");
+      dataFile.println(longitude, 7);
+      dataFile.println(" ;");
+      dataFile.print(altitude);
+      dataFile.println(" ;");
+      dataFile.print(speed);
+      dataFile.println(" ;");
+      dataFile.println(satellites);
       dataFile.close();
     }
     else {
