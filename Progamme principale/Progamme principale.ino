@@ -59,7 +59,7 @@ void setup()
 
   //écrire les données sur le fichier texte
   if(dataFile) {
-  dataFile.println("CO2 ;Temperature ;Humidity ;Pressure ;Latitude ;Longitude ;Altitude ;Speed ;Satelittes ");
+  dataFile.println("Date ;heure ;CO2 ;Temperature ;Humidity ;Pressure ;Latitude ;Longitude ;Altitude ;Speed ;Satelittes ");
   //fermer le fichier
   dataFile.close();
   }
@@ -266,7 +266,7 @@ void loop()
       dataFile.print(rtc.getMonth());
       dataFile.print("/");    
       dataFile.print(rtc.getYear());
-      dataFile.print(" ");
+      dataFile.print(" ;");
       dataFile.print(rtc.getHours());
       dataFile.print(":");     
       dataFile.print(rtc.getMinutes()); 
@@ -280,15 +280,15 @@ void loop()
       dataFile.print(humidity.relative_humidity);
       dataFile.print(" ;");
       dataFile.print(pressure.pressure);
-      dataFile.println(" ;");
+      dataFile.print(" ;");
       dataFile.print(latitude, 7);
-      dataFile.println(" ;");
-      dataFile.println(longitude, 7);
-      dataFile.println(" ;");
+      dataFile.print(" ;");
+      dataFile.print(longitude, 7);
+      dataFile.print(" ;");
       dataFile.print(altitude);
-      dataFile.println(" ;");
+      dataFile.print(" ;");
       dataFile.print(speed);
-      dataFile.println(" ;");
+      dataFile.print(" ;");
       dataFile.println(satellites);
       dataFile.close();
     }
