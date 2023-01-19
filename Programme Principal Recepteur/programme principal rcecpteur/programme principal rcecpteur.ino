@@ -5,6 +5,8 @@
 
 File myFile;
 
+char lora;
+
 //SD card
 const int chipSelect = 19;
 
@@ -62,8 +64,10 @@ void loop ()
       //tant qu'on reçoit des données en LoRa
       while(LoRa.available())
       {
+        lora = LoRa.read();
         //écrire dans le fichier les données LoRa
-        dataFile.print((char)LoRa.read()) && Serial.print((char)LoRa.read());
+        Serial.print(lora);
+        dataFile.print(lora);
       }      
       //fermer le fichier
       dataFile.close();
