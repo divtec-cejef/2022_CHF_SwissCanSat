@@ -32,6 +32,7 @@ const byte year = 23;
 int counter = 0;
 char id = 'DivtechX'
 
+
 void setup()
 {
   //================================================================================
@@ -46,7 +47,7 @@ void setup()
   rtc.setTime(hours, minutes, seconds);
   rtc.setDate(day, month, year);
 
-  //================================================================================
+  //================================================================================ 
   //SETUP SD card
   //================================================================================
   Serial.print("Initializing SD card...");
@@ -148,6 +149,7 @@ void setup()
 
 void loop()
 {
+  if (GPS.available()) {
     //allumer LED
     digitalWrite(3, HIGH);
   
@@ -300,4 +302,5 @@ void loop()
       while(1);
     }
     delay(1000);
+  }
 }
