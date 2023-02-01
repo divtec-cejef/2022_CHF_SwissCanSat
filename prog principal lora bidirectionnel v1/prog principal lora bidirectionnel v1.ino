@@ -44,6 +44,7 @@ byte localAddress = 0xBB;     // address of this device
 byte destination = 0xFF;      // destination to send to
 long lastSendTime = 0;        // last send time
 int interval = 2000;          // interval between sends
+int packetSize = LoRa.parsePacket();;
 
 void setup()
 {
@@ -81,6 +82,7 @@ void setup()
     Serial.println("error opening datalog.txt");
     while(1);
   }
+  Serial.println("SD card setup done");
 
   //================================================================================
   //SETUP SCD41
@@ -92,9 +94,9 @@ void setup()
   if (SCD41.begin() == false)
   {
     Serial.println(F("Sensor not detected. Please check wiring. Freezing..."));
-    while (1)
-      ;
+    while (1);
   }
+  Serial.println("SCD41 setup done");
 
   //================================================================================
   //SETUP MS8607
@@ -102,14 +104,11 @@ void setup()
   Serial.begin(115200);
   while (!Serial) delay(10);     
 
-  Serial.println("Adafruit MS8607 test!");
-
   // Try to initialize!
   if (!ms8607.begin()) {
     Serial.println("Failed to find MS8607 chip");
     while (1) { delay(10); }
   }
-  Serial.println("MS8607 Found!");
 
   ms8607.setHumidityResolution(MS8607_HUMIDITY_RESOLUTION_OSR_8b);
   Serial.print("Humidity resolution set to ");
@@ -129,7 +128,8 @@ void setup()
     case MS8607_PRESSURE_RESOLUTION_OSR_4096: Serial.println("4096"); break;
     case MS8607_PRESSURE_RESOLUTION_OSR_8192: Serial.println("8192"); break;
   }
-  Serial.println("");
+  Serial.println("MS8607 setup done");
+
   //================================================================================
   //SETUP GPS
   //================================================================================
@@ -145,6 +145,7 @@ void setup()
     Serial.println("Failed to initialize GPS!");
     while (1);
   }
+  Serial.println("GPS setup done");
   //================================================================================
   //SETUP LoRa
   //================================================================================
@@ -158,15 +159,16 @@ void setup()
     while (true);                       // if failed, do nothing
   }
 
-  LoRa.onReceive(onReceive);
-  LoRa.receive();
-  Serial.println("LoRa init succeeded.");
+  receive(packetSize);
+  Serial.println("LoRa setup done");
 
   //================================================================================
   //SETUP AUTRES COMPOSANTS
   //================================================================================
   digitalWrite(3, HIGH);//led "on"
   pinMode(5, OUTPUT);//buzzer
+  Serial.println("other components setup done");
+  Serial.println("going to loop");
 }
 
 
@@ -185,13 +187,12 @@ void loop() {
   if (millis() - lastSendTime > interval) {
     String message = "1";
     sendMessage(message);
-    Serial.println("Sending " + message);
     lastSendTime = millis();            // timestamp the message
     interval = 1000;                    // 1 seconds
-    LoRa.receive();                     // go back into receive mode
-  }
+    receive(packetSize);                // go back into receive mode
+    counter++;
 
-      //write in SD card
+    //write in SD card
     File dataFile = SD.open("datalog.txt", FILE_WRITE);
     if(dataFile) {
       dataFile.print(rtc.getDay());
@@ -229,39 +230,43 @@ void loop() {
       Serial.println("error opening datalog.txt");
       while(1);
     }
+  }
 }
 
 
 void sendMessage(String outgoing) {
   sensors_event_t temp, pressure, humidity;
   ms8607.getEvent(&pressure, &temp, &humidity);
-  LoRa.beginPacket();                   // start packet
-  LoRa.write(destination);              // add destination address
-  LoRa.write(localAddress);             // add sender address
-  LoRa.write(msgCount);                 // add message ID
-  LoRa.print(SCD41.getCO2());
-  LoRa.print(" |");
-  LoRa.print(temp.temperature);
-  LoRa.print(" |");
-  LoRa.print(humidity.relative_humidity);
-  LoRa.print(" |");
-  LoRa.print(pressure.pressure);
-  LoRa.print(" |");
-  LoRa.print(latitude, 7);
-  LoRa.print(" |");
-  LoRa.print(longitude, 7);
-  LoRa.print(" |");
-  LoRa.print(altitude);
-  LoRa.print(" |");
-  LoRa.print(speed);
-  LoRa.print(" |");
-  LoRa.println(satellites);
-  LoRa.endPacket();                     // finish packet and send it
+//  LoRa.beginPacket();                   // start packet
+  Serial.print(destination);              // add destination address
+  Serial.print(",");
+  Serial.print(localAddress);             // add sender address
+  Serial.print(",");
+  Serial.println(msgCount);                 // add message ID
+  Serial.print(SCD41.getCO2());
+  Serial.print(" |");
+  Serial.print(temp.temperature);
+  Serial.print(" |");
+  Serial.print(humidity.relative_humidity);
+  Serial.print(" |");
+  Serial.print(pressure.pressure);
+  Serial.print(" |");
+  Serial.print(latitude, 7);
+  Serial.print(" |");
+  Serial.print(longitude, 7);
+  Serial.print(" |");
+  Serial.print(altitude);
+  Serial.print(" |");
+  Serial.print(speed);
+  Serial.print(" |");
+  Serial.println(satellites);
+//  LoRa.endPacket();                     // finish packet and send it
   msgCount++;                           // increment message ID
 }
 
 
-void onReceive(int packetSize) {
+void receive(int packetSize) {
+  Serial.println("receive mode");
   if (packetSize == 0) return;          // if there's no packet, return
 
   //// read packet header bytes:
@@ -270,23 +275,23 @@ void onReceive(int packetSize) {
   //byte incomingMsgId = LoRa.read();     // incoming msg ID
   //byte incomingLength = LoRa.read();    // incoming msg length
 
-  String incoming = "";                 // payload of packet
+  char incoming;                          // payload of packet
 
-  while (LoRa.available()) {            // can't use readString() in callback, so
-    incoming += (char)LoRa.read();      // add bytes one by one
+  while (LoRa.available()) {              // can't use readString() in callback, so
+    incoming = LoRa.read();               //save lora datas in variable 'incoming' 
   }
 
-  if(incoming == "P")
+  if(incoming == 'P')
   {
     tone(5, 1000);
-    delay(500);
+    delay(1);
     Serial.println("piazo ON");    
   }  
   
   if(incoming == 'S')
   {
     noTone(5);
-    delay(500);
+    delay(1);
     Serial.println("piazo OFF");
   }
 

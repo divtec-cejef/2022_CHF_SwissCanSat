@@ -30,6 +30,7 @@ const byte year = 23;
 
 //LoRa
 int counter = 0;
+char id = 'DivtechX'
 
 void setup()
 {
@@ -208,6 +209,8 @@ void loop()
 
     // send packet
     LoRa.beginPacket();
+    //send ID
+    LoRa.println(id);
      //print Date & Hour
     LoRa.print(rtc.getDay());
     LoRa.print("/");

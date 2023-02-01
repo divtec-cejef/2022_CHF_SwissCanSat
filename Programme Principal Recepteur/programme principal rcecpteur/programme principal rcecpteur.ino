@@ -13,14 +13,10 @@ const int chipSelect = 19;
 void setup ()
 {
   Serial.begin(9600);
-
 //SD card setup
-  Serial.print("Initializing SD card...");
   if (!SD.begin(chipSelect)) {
-    Serial.println("Card failed, or not present");
     while (1);
   }
-  Serial.println("card initialized.");
 
   //ouvrir le fichier texte
   File dataFile = SD.open("datalog.txt", FILE_WRITE);
@@ -32,17 +28,12 @@ void setup ()
     dataFile.close();
   }
   else {
-    Serial.println("error opening datalog.txt");
     while(1);
   }
 
   //setup LoRa receiver
   while (!Serial);
-
-  Serial.println("LoRa Receiver");
-
   if (!LoRa.begin(868E6)) {
-    Serial.println("Starting LoRa failed!");
     while (1);
   }
 }
@@ -66,8 +57,8 @@ void loop ()
       {
         lora = LoRa.read();
         //écrire dans le fichier les données LoRa
-        Serial.print(lora);
         dataFile.print(lora);
+        Serial.println(lora);
       }      
       //fermer le fichier
       dataFile.close();
@@ -75,10 +66,29 @@ void loop ()
 
     }
     else {
-      //si le fichier ne s'est pas ouvert correctement
-      Serial.println("error opening datalog.txt");
-      //freeze
       while(1);
     }
+  }
+
+  if(Serial.available())
+  {
+    String command = Serial.readStringUntil('\n'); // read string until meet newline character
+
+    if(command == "P")
+    {
+       // turn on LED
+      LoRa.beginPacket();
+      LoRa.print(command); //send the command to the Cansat
+      LoRa.endPacket();
+
+    }
+    else
+    if(command == "S")
+    {
+      LoRa.beginPacket();
+      LoRa.print(command); //send the command to the Cansat
+      LoRa.endPacket();
+    }
+    
   }
 }
