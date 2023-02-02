@@ -45,7 +45,7 @@ byte destination = 0xFF;   // destination to send to
 long lastSendTime = 0;     // last send time
 int interval = 2000;       // interval between sends
 int packetSize = LoRa.parsePacket();
-;
+char incoming;
 
 void setup() {
   //================================================================================
@@ -159,11 +159,9 @@ void setup() {
 
   if (!LoRa.begin(915E6)) {  // initialize ratio at 915 MHz
     Serial.println("LoRa init failed. Check your connections.");
-    while (true)
-      ;  // if failed, do nothing
+    while (1);  // if failed, do nothing
   }
 
-  receive(packetSize);
   Serial.println("LoRa setup done");
 
   //================================================================================
@@ -193,7 +191,7 @@ void loop() {
     sendMessage(message);
     lastSendTime = millis();  // timestamp the message
     interval = 1000;          // 1 seconds
-    receive(packetSize);      // go back into receive mode
+//    receive(packetSize);      // go back into receive mode  /!\ pas besoin pour l'instant, on utilise plus cette fonction
     counter++;
 
     //write in SD card
@@ -231,10 +229,10 @@ void loop() {
       dataFile.close();
     } else {
       Serial.println("error opening datalog.txt");
-      while (1)
-        ;
+      while (1);
     }
   }
+
   if (LoRa.available()) {
     Serial.println("recieved LoRa data");
     while (LoRa.available()) {  // can't use readString() in callback, so
