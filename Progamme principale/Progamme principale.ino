@@ -31,7 +31,7 @@ const byte year = 23;
 
 //LoRa
 int counter = 0;
-char id = 'DivtechX'
+char id = 'DivtechX';
 
 //altitude
 float po=1034.85;
@@ -208,7 +208,7 @@ void loop()
     Serial.println(longitude, 7);
 
     Serial.print("Altitude: ");
-    Serial.print(alt);
+    Serial.print(Alt);
     Serial.println("m");
 
     Serial.print("Ground speed: ");
@@ -259,7 +259,7 @@ void loop()
     LoRa.println(longitude, 7);
 
     LoRa.print("Altitude: ");
-    LoRa.print(alt);
+    LoRa.print(Alt);
     LoRa.println("m");
 
     LoRa.print("Ground speed: ");
@@ -304,7 +304,7 @@ void loop()
       dataFile.print(" ;");
       dataFile.print(longitude, 7);
       dataFile.print(" ;");
-      dataFile.print(alt);
+      dataFile.print(Alt);
       dataFile.print(" ;");
       dataFile.print(speed);
       dataFile.print(" ;");
