@@ -7,6 +7,7 @@
 #include <RTCZero.h>
 #include <Arduino_MKRGPS.h>
 #include <LoRa.h>
+#include <math.h>
 
 //MS8607 sensor
 Adafruit_MS8607 ms8607; 
@@ -31,6 +32,14 @@ const byte year = 23;
 //LoRa
 int counter = 0;
 char id = 'DivtechX'
+
+//altitude
+float po=1034.85;
+float k=-0.000126;
+float P;
+float Alt;
+float logOfNumber;
+float pressure;
 
 
 void setup()
@@ -180,6 +189,11 @@ void loop()
     Serial.print("Pressure: ");Serial.print(pressure.pressure); Serial.print(" hPa");
     Serial.println("");
 
+    //calcul altitude
+    P=pressure.pressure/po;
+    logOfNumber = log(P);
+    Alt = logOfNumber/k;
+
     //  print GPS -ASX00017
     float latitude   = GPS.latitude();
     float longitude  = GPS.longitude();
@@ -194,7 +208,7 @@ void loop()
     Serial.println(longitude, 7);
 
     Serial.print("Altitude: ");
-    Serial.print(altitude);
+    Serial.print(alt);
     Serial.println("m");
 
     Serial.print("Ground speed: ");
@@ -245,7 +259,7 @@ void loop()
     LoRa.println(longitude, 7);
 
     LoRa.print("Altitude: ");
-    LoRa.print(altitude);
+    LoRa.print(alt);
     LoRa.println("m");
 
     LoRa.print("Ground speed: ");
@@ -290,7 +304,7 @@ void loop()
       dataFile.print(" ;");
       dataFile.print(longitude, 7);
       dataFile.print(" ;");
-      dataFile.print(altitude);
+      dataFile.print(alt);
       dataFile.print(" ;");
       dataFile.print(speed);
       dataFile.print(" ;");
