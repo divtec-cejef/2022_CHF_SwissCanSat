@@ -1,7 +1,7 @@
 #include <Wire.h>
 #include <SPI.h>
 #include <SD.h>
-#include "SparkFun_SCD4x_Arduino_Library.h" 
+#include "SparkFun_SCD4x_Arduino_Library.h"
 #include <Adafruit_MS8607.h>
 #include <Adafruit_Sensor.h>
 #include <RTCZero.h>
@@ -9,10 +9,10 @@
 #include <LoRa.h>
 
 //MS8607 sensor
-Adafruit_MS8607 ms8607; 
+Adafruit_MS8607 ms8607;
 
 //SCD41 sensor
-SCD4x SCD41; 
+SCD4x SCD41;
 int CO2;
 
 //GPS
@@ -23,10 +23,10 @@ int speed;
 int satellites;
 
 //SD card
-File myFile; 
+File myFile;
 const int chipSelect = 4;
 
-//RTC 
+//RTC
 RTCZero rtc;
 const byte seconds = 30;
 const byte minutes = 52;
@@ -38,25 +38,25 @@ const byte year = 23;
 
 //LoRa
 int counter = 0;
-String outgoing;              // outgoing message
-byte msgCount = 0;            // count of outgoing messages
-byte localAddress = 0xBB;     // address of this device
-byte destination = 0xFF;      // destination to send to
-long lastSendTime = 0;        // last send time
-int interval = 2000;          // interval between sends
-int packetSize = LoRa.parsePacket();;
+String outgoing;           // outgoing message
+byte msgCount = 0;         // count of outgoing messages
+byte localAddress = 0xBB;  // address of this device
+byte destination = 0xFF;   // destination to send to
+long lastSendTime = 0;     // last send time
+int interval = 2000;       // interval between sends
+int packetSize = LoRa.parsePacket();
+;
 
-void setup()
-{
+void setup() {
   //================================================================================
   //SETUP LED
-  //================================================================================  
+  //================================================================================
   pinMode(3, OUTPUT);
-  
+
   //================================================================================
   //SETUP RTC
   //================================================================================
-  rtc.begin(); // initialize RTC
+  rtc.begin();  // initialize RTC
   rtc.setTime(hours, minutes, seconds);
   rtc.setDate(day, month, year);
 
@@ -66,21 +66,22 @@ void setup()
   Serial.print("Initializing SD card...");
   if (!SD.begin(chipSelect)) {
     Serial.println("Card failed, or not present");
-    while (1);
+    while (1)
+      ;
   }
   Serial.println("card initialized.");
-  
+
   File dataFile = SD.open("datalog.txt", FILE_WRITE);
 
   //écrire les données sur le fichier texte
-  if(dataFile) {
-  dataFile.println("Date ;heure ;CO2 ;Temperature ;Humidity ;Pressure ;Latitude ;Longitude ;Altitude ;Speed ;Satelittes ");
-  //fermer le fichier
-  dataFile.close();
-  }
-  else {
+  if (dataFile) {
+    dataFile.println("Date ;heure ;CO2 ;Temperature ;Humidity ;Pressure ;Latitude ;Longitude ;Altitude ;Speed ;Satelittes ");
+    //fermer le fichier
+    dataFile.close();
+  } else {
     Serial.println("error opening datalog.txt");
-    while(1);
+    while (1)
+      ;
   }
   Serial.println("SD card setup done");
 
@@ -91,10 +92,10 @@ void setup()
   Serial.println(F("SCD4x Example"));
   Wire.begin();
 
-  if (SCD41.begin() == false)
-  {
+  if (SCD41.begin() == false) {
     Serial.println(F("Sensor not detected. Please check wiring. Freezing..."));
-    while (1);
+    while (1)
+      ;
   }
   Serial.println("SCD41 setup done");
 
@@ -102,7 +103,7 @@ void setup()
   //SETUP MS8607
   //================================================================================
   Serial.begin(115200);
-  while (!Serial) delay(10);     
+  while (!Serial) delay(10);
 
   // Try to initialize!
   if (!ms8607.begin()) {
@@ -112,7 +113,7 @@ void setup()
 
   ms8607.setHumidityResolution(MS8607_HUMIDITY_RESOLUTION_OSR_8b);
   Serial.print("Humidity resolution set to ");
-  switch (ms8607.getHumidityResolution()){
+  switch (ms8607.getHumidityResolution()) {
     case MS8607_HUMIDITY_RESOLUTION_OSR_12b: Serial.println("12-bit"); break;
     case MS8607_HUMIDITY_RESOLUTION_OSR_11b: Serial.println("11-bit"); break;
     case MS8607_HUMIDITY_RESOLUTION_OSR_10b: Serial.println("10-bit"); break;
@@ -120,7 +121,7 @@ void setup()
   }
   // ms8607.setPressureResolution(MS8607_PRESSURE_RESOLUTION_OSR_4096);
   Serial.print("Pressure and Temperature resolution set to ");
-  switch (ms8607.getPressureResolution()){
+  switch (ms8607.getPressureResolution()) {
     case MS8607_PRESSURE_RESOLUTION_OSR_256: Serial.println("256"); break;
     case MS8607_PRESSURE_RESOLUTION_OSR_512: Serial.println("512"); break;
     case MS8607_PRESSURE_RESOLUTION_OSR_1024: Serial.println("1024"); break;
@@ -136,27 +137,30 @@ void setup()
   // initialize serial communications and wait for port to open:
   Serial.begin(9600);
   while (!Serial) {
-    ; // wait for serial port to connect. Needed for native USB port only
+    ;  // wait for serial port to connect. Needed for native USB port only
   }
 
   // If you are using the MKR GPS as shield, change the next line to pass
   // the GPS_MODE_SHIELD parameter to the GPS.begin(...)
   if (!GPS.begin()) {
     Serial.println("Failed to initialize GPS!");
-    while (1);
+    while (1)
+      ;
   }
   Serial.println("GPS setup done");
   //================================================================================
   //SETUP LoRa
   //================================================================================
-  Serial.begin(9600);                   // initialize serial
-  while (!Serial);
+  Serial.begin(9600);  // initialize serial
+  while (!Serial)
+    ;
 
   Serial.println("LoRa Duplex with callback");
 
-  if (!LoRa.begin(915E6)) {             // initialize ratio at 915 MHz
+  if (!LoRa.begin(915E6)) {  // initialize ratio at 915 MHz
     Serial.println("LoRa init failed. Check your connections.");
-    while (true);                       // if failed, do nothing
+    while (true)
+      ;  // if failed, do nothing
   }
 
   receive(packetSize);
@@ -165,8 +169,8 @@ void setup()
   //================================================================================
   //SETUP AUTRES COMPOSANTS
   //================================================================================
-  digitalWrite(3, HIGH);//led "on"
-  pinMode(5, OUTPUT);//buzzer
+  digitalWrite(3, HIGH);  //led "on"
+  pinMode(5, OUTPUT);     //buzzer
   Serial.println("other components setup done");
   Serial.println("going to loop");
 }
@@ -183,27 +187,27 @@ void loop() {
   sensors_event_t temp, pressure, humidity;
   ms8607.getEvent(&pressure, &temp, &humidity);
 
-  
+
   if (millis() - lastSendTime > interval) {
     String message = "1";
     sendMessage(message);
-    lastSendTime = millis();            // timestamp the message
-    interval = 1000;                    // 1 seconds
-    receive(packetSize);                // go back into receive mode
+    lastSendTime = millis();  // timestamp the message
+    interval = 1000;          // 1 seconds
+    receive(packetSize);      // go back into receive mode
     counter++;
 
     //write in SD card
     File dataFile = SD.open("datalog.txt", FILE_WRITE);
-    if(dataFile) {
+    if (dataFile) {
       dataFile.print(rtc.getDay());
       dataFile.print("/");
       dataFile.print(rtc.getMonth());
-      dataFile.print("/");    
+      dataFile.print("/");
       dataFile.print(rtc.getYear());
       dataFile.print(" ;");
       dataFile.print(rtc.getHours());
-      dataFile.print(":");     
-      dataFile.print(rtc.getMinutes()); 
+      dataFile.print(":");
+      dataFile.print(rtc.getMinutes());
       dataFile.print(":");
       dataFile.print(rtc.getSeconds());
       dataFile.print(" ;");
@@ -225,10 +229,32 @@ void loop() {
       dataFile.print(" ;");
       dataFile.println(satellites);
       dataFile.close();
-    }
-    else {
+    } else {
       Serial.println("error opening datalog.txt");
-      while(1);
+      while (1)
+        ;
+    }
+  }
+  if (LoRa.available()) {
+    Serial.println("recieved LoRa data");
+    while (LoRa.available()) {  // can't use readString() in callback, so
+      incoming = LoRa.read();   //save lora datas in variable 'incoming'
+    }
+
+    if (incoming == 'P') {
+      tone(5, 1000);
+      delay(1);
+      Serial.println("piazo ON");
+    }
+
+    if (incoming == 'S') {
+      noTone(5);
+      delay(1);
+      Serial.println("piazo OFF");
+    }
+
+    if (incoming != 'P' || incoming != 'S') {
+      Serial.println("wrong data recieved");
     }
   }
 }
@@ -237,12 +263,12 @@ void loop() {
 void sendMessage(String outgoing) {
   sensors_event_t temp, pressure, humidity;
   ms8607.getEvent(&pressure, &temp, &humidity);
-//  LoRa.beginPacket();                   // start packet
-  Serial.print(destination);              // add destination address
+  //  LoRa.beginPacket();     /!\ remettre pour le LoRa, enlever pour le Serial /!\              // start packet
+  Serial.print(destination);  // add destination address
   Serial.print(",");
-  Serial.print(localAddress);             // add sender address
+  Serial.print(localAddress);  // add sender address
   Serial.print(",");
-  Serial.println(msgCount);                 // add message ID
+  Serial.println(msgCount);  // add message ID
   Serial.print(SCD41.getCO2());
   Serial.print(" |");
   Serial.print(temp.temperature);
@@ -260,9 +286,11 @@ void sendMessage(String outgoing) {
   Serial.print(speed);
   Serial.print(" |");
   Serial.println(satellites);
-//  LoRa.endPacket();                     // finish packet and send it
-  msgCount++;                           // increment message ID
+  //  LoRa.endPacket(); /!\ remettre pour le LoRa, enlever pour le Serial /!\                  // finish packet and send it
+  msgCount++;  // increment message ID
 }
+
+/* /!\ remplacé dans le void loop() pour tester si ça fonctionne mieux /!\
 
 
 void receive(int packetSize) {
@@ -310,9 +338,4 @@ void receive(int packetSize) {
   //Serial.println("Snr: " + String(LoRa.packetSnr()));
   //Serial.println();
 }
-
-
-
-
-
-
+*/
