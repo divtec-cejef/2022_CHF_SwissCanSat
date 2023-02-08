@@ -8,6 +8,7 @@
 #include <Arduino_MKRGPS.h>
 #include <LoRa.h>
 #include <math.h>
+#include <Arduino_PMIC.h>
 
 //MS8607 sensor
 Adafruit_MS8607 ms8607; 
@@ -41,21 +42,49 @@ float Alt;
 float logOfNumber;
 float pressure;
 
+//Pmic boost
+int usb_mode = UNKNOWN_MODE;
+
 
 void setup()
 {
   //================================================================================
+  //SETUP Pmic boost
+  //================================================================================
+  Serial1.begin(9600);
+  if (!PMIC.begin()) {
+    Serial1.println("Failed to initialize PMIC!");
+    while (1);
+  }
+
+  // Enable boost mode, this mode allows using the board as host to
+  // connect a guest device such as a keyboard
+  if (!PMIC.enableBoostMode()) {
+    Serial1.println("Error enabling Boost Mode");
+  }
+  Serial1.println("Initialization Done!");
+  //Pmic boost
+  int actual_mode = PMIC.USBmode();
+  if (actual_mode != usb_mode) {
+    usb_mode = actual_mode;
+    if (actual_mode == BOOST_MODE) {
+      // if the boost mode was correctly enabled, 5 V should appear on 5V pin
+      // and on the USB connector
+      Serial1.println("Boost mode status enabled");
+    }
+  } 
+  delay(2000);
+
+  //================================================================================
   //SETUP LED
   //================================================================================  
   pinMode(3, OUTPUT);
-  
   //================================================================================
   //SETUP RTC
   //================================================================================
   rtc.begin(); // initialize RTC
   rtc.setTime(hours, minutes, seconds);
   rtc.setDate(day, month, year);
-
   //================================================================================ 
   //SETUP SD card
   //================================================================================
@@ -78,11 +107,10 @@ void setup()
     Serial.println("error opening datalog.txt");
     while(1);
   }
-
   //================================================================================
   //SETUP SCD41
   //================================================================================
-  Serial.begin(115200);
+  Serial.begin(9600);
   Serial.println(F("SCD4x Example"));
   Wire.begin();
 
@@ -92,18 +120,15 @@ void setup()
     while (1)
       ;
   }
-
+  Serial.println("SCD41 Found!");
   //================================================================================
   //SETUP MS8607
   //================================================================================
-  Serial.begin(115200);
-  while (!Serial) delay(10);     
-
   Serial.println("Adafruit MS8607 test!");
 
   // Try to initialize!
   if (!ms8607.begin()) {
-    Serial.println("Failed to find MS8607 chip");
+    Serial1.println("Failed to find MS8607 chip");
     while (1) { delay(10); }
   }
   Serial.println("MS8607 Found!");
@@ -130,24 +155,16 @@ void setup()
   //================================================================================
   //SETUP GPS
   //================================================================================
-  // initialize serial communications and wait for port to open:
-  Serial.begin(9600);
-  while (!Serial) {
-    ; // wait for serial port to connect. Needed for native USB port only
-  }
-
   // If you are using the MKR GPS as shield, change the next line to pass
   // the GPS_MODE_SHIELD parameter to the GPS.begin(...)
   if (!GPS.begin()) {
     Serial.println("Failed to initialize GPS!");
     while (1);
   }
+  Serial.println("GPS Found!");
   //================================================================================
   //SETUP LoRa
   //================================================================================
-  Serial.begin(9600);
-  while (!Serial);
-
   Serial.println("LoRa Sender");
 
   if (!LoRa.begin(868E6)) {
@@ -157,7 +174,7 @@ void setup()
 }
 
 void loop()
-{
+{ 
   if (GPS.available()) {
     //allumer LED
     digitalWrite(3, HIGH);
