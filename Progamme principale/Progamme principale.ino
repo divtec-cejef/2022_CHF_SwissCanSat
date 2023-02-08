@@ -32,8 +32,10 @@ const byte year = 23;
 
 //LoRa
 int counter = 0;
+int interval = 1000;
+long lastSendTime = 0;
 int packetSize = LoRa.parsePacket();
-char command = 0;
+char incoming = 0;
 char id = 'DivtechX';
 
 //altitude
@@ -327,7 +329,7 @@ void loop()
         dataFile.print(longitude, 7);
         dataFile.print(" ;");
         dataFile.print(Alt);
-        dataFile.print(" ;");
+        dataFile.print(" ;"); 
         dataFile.print(speed);
         dataFile.print(" ;");
         dataFile.println(satellites);
