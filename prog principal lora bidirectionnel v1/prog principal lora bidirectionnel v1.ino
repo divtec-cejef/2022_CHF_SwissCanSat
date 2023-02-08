@@ -48,6 +48,7 @@ int packetSize = LoRa.parsePacket();
 char incoming;
 
 void setup() {
+  Serial.begin(112000);
   //================================================================================
   //SETUP LED
   //================================================================================
@@ -88,7 +89,6 @@ void setup() {
   //================================================================================
   //SETUP SCD41
   //================================================================================
-  Serial.begin(115200);
   Serial.println(F("SCD4x Example"));
   Wire.begin();
 
@@ -102,8 +102,6 @@ void setup() {
   //================================================================================
   //SETUP MS8607
   //================================================================================
-  Serial.begin(115200);
-  while (!Serial) delay(10);
 
   // Try to initialize!
   if (!ms8607.begin()) {
@@ -134,11 +132,6 @@ void setup() {
   //================================================================================
   //SETUP GPS
   //================================================================================
-  // initialize serial communications and wait for port to open:
-  Serial.begin(9600);
-  while (!Serial) {
-    ;  // wait for serial port to connect. Needed for native USB port only
-  }
 
   // If you are using the MKR GPS as shield, change the next line to pass
   // the GPS_MODE_SHIELD parameter to the GPS.begin(...)
@@ -151,13 +144,9 @@ void setup() {
   //================================================================================
   //SETUP LoRa
   //================================================================================
-  Serial.begin(9600);  // initialize serial
-  while (!Serial)
-    ;
-
   Serial.println("LoRa Duplex with callback");
 
-  if (!LoRa.begin(915E6)) {  // initialize ratio at 915 MHz
+  if (!LoRa.begin(868E6)) {  // initialize ratio at 915 MHz
     Serial.println("LoRa init failed. Check your connections.");
     while (1);  // if failed, do nothing
   }
@@ -232,29 +221,23 @@ void loop() {
       while (1);
     }
   }
-
-  if (LoRa.available()) {
-    Serial.println("recieved LoRa data");
-    while (LoRa.available()) {  // can't use readString() in callback, so
-      incoming = LoRa.read();   //save lora datas in variable 'incoming'
-    }
-
-    if (incoming == 'P') {
-      tone(5, 1000);
-      delay(1);
-      Serial.println("piazo ON");
-    }
-
-    if (incoming == 'S') {
-      noTone(5);
-      delay(1);
-      Serial.println("piazo OFF");
-    }
-
-    if (incoming != 'P' || incoming != 'S') {
-      Serial.println("wrong data recieved");
-    }
+  if(packetSize)
+  {
+    incoming = LoRa.read();
   }
+  
+  if (incoming == 'P') {
+    tone(5, 1000);
+    delay(1);
+    Serial.println("piazo ON");
+  }
+
+  if (incoming == 'S') {
+    noTone(5);
+    delay(1);
+    Serial.println("piazo OFF");
+  }
+  incoming = 0;
 }
 
 
@@ -287,53 +270,3 @@ void sendMessage(String outgoing) {
   //  LoRa.endPacket(); /!\ remettre pour le LoRa, enlever pour le Serial /!\                  // finish packet and send it
   msgCount++;  // increment message ID
 }
-
-/* /!\ remplacé dans le void loop() pour tester si ça fonctionne mieux /!\
-
-
-void receive(int packetSize) {
-  Serial.println("receive mode");
-  if (packetSize == 0) return;          // if there's no packet, return
-
-  //// read packet header bytes:
-  //int recipient = LoRa.read();          // recipient address
-  //byte sender = LoRa.read();            // sender address
-  //byte incomingMsgId = LoRa.read();     // incoming msg ID
-  //byte incomingLength = LoRa.read();    // incoming msg length
-
-  char incoming;                          // payload of packet
-
-  while (LoRa.available()) {              // can't use readString() in callback, so
-    incoming = LoRa.read();               //save lora datas in variable 'incoming' 
-  }
-
-  if(incoming == 'P')
-  {
-    tone(5, 1000);
-    delay(1);
-    Serial.println("piazo ON");    
-  }  
-  
-  if(incoming == 'S')
-  {
-    noTone(5);
-    delay(1);
-    Serial.println("piazo OFF");
-  }
-
-  //// if the recipient isn't this device or broadcast,
-  //if (recipient != localAddress && recipient != 0xFF) {
-  //  Serial.println("This message is not for me.");
-  //  return;                             // skip rest of function
-  //}
-
-  // if message is for this device, or broadcast, print details:
-  //Serial.println("Received from: 0x" + String(sender, HEX));
-  //Serial.println("Sent to: 0x" + String(recipient, HEX));
-  //Serial.println("Message ID: " + String(incomingMsgId));
-  //Serial.println("Message: " + incoming);
-  //Serial.println("RSSI: " + String(LoRa.packetRssi()));
-  //Serial.println("Snr: " + String(LoRa.packetSnr()));
-  //Serial.println();
-}
-*/
