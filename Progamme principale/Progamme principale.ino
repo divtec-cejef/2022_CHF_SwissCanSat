@@ -32,6 +32,8 @@ const byte year = 23;
 
 //LoRa
 int counter = 0;
+int packetSize = LoRa.parsePacket();
+char command = 0;
 char id = 'DivtechX';
 
 //altitude
@@ -175,163 +177,184 @@ void setup()
 
 void loop()
 { 
-  if (GPS.available()) {
-    //allumer LED
-    digitalWrite(3, HIGH);
-  
-    //print Date & Hour
-    Serial.print(rtc.getDay());
-    Serial.print("/");
-    Serial.print(rtc.getMonth());
-    Serial.print("/");    
-    Serial.print(rtc.getYear());
-    Serial.print(" ");
-    Serial.print(rtc.getHours());
-    Serial.print(":");     
-    Serial.print(rtc.getMinutes()); 
-    Serial.print(":");
-    Serial.print(rtc.getSeconds());  
-    Serial.println();
+  if (millis() - lastSendTime > interval) {
+    lastSendTime = millis();  // timestamp the message
+    interval = 1000;          // 1 seconds
+    if (GPS.available()) {
+      //allumer LED
+      digitalWrite(3, HIGH);
+    
+      //print Date & Hour
+      Serial.print(rtc.getDay());
+      Serial.print("/");
+      Serial.print(rtc.getMonth());
+      Serial.print("/");    
+      Serial.print(rtc.getYear());
+      Serial.print(" ");
+      Serial.print(rtc.getHours());
+      Serial.print(":");     
+      Serial.print(rtc.getMinutes()); 
+      Serial.print(":");
+      Serial.print(rtc.getSeconds());  
+      Serial.println();
 
-    // print C02 -SCD41
-    Serial.print(F("CO2(ppm):"));
-    Serial.print(SCD41.getCO2());
-    Serial.println();
+      // print C02 -SCD41
+      Serial.print(F("CO2(ppm):"));
+      Serial.print(SCD41.getCO2());
+      Serial.println();
 
-    // print HUMIDITY,TEMPERATURE -MS8607   
-    sensors_event_t temp, pressure, humidity;
-    ms8607.getEvent(&pressure, &temp, &humidity);
-    Serial.print("Temperature: ");Serial.print(temp.temperature); Serial.println(" degrees C");
-    Serial.print("Humidity: ");Serial.print(humidity.relative_humidity); Serial.println(" %rH");
-    Serial.print("Pressure: ");Serial.print(pressure.pressure); Serial.print(" hPa");
-    Serial.println("");
+      // print HUMIDITY,TEMPERATURE -MS8607   
+      sensors_event_t temp, pressure, humidity;
+      ms8607.getEvent(&pressure, &temp, &humidity);
+      Serial.print("Temperature: ");Serial.print(temp.temperature); Serial.println(" degrees C");
+      Serial.print("Humidity: ");Serial.print(humidity.relative_humidity); Serial.println(" %rH");
+      Serial.print("Pressure: ");Serial.print(pressure.pressure); Serial.print(" hPa");
+      Serial.println("");
 
-    //calcul altitude
-    P=pressure.pressure/po;
-    logOfNumber = log(P);
-    Alt = logOfNumber/k;
+      //calcul altitude
+      P=pressure.pressure/po;
+      logOfNumber = log(P);
+      Alt = logOfNumber/k;
 
-    //  print GPS -ASX00017
-    float latitude   = GPS.latitude();
-    float longitude  = GPS.longitude();
-    float altitude   = GPS.altitude();
-    float speed      = GPS.speed();
-    int   satellites = GPS.satellites();
+      //  print GPS -ASX00017
+      float latitude   = GPS.latitude();
+      float longitude  = GPS.longitude();
+      float altitude   = GPS.altitude();
+      float speed      = GPS.speed();
+      int   satellites = GPS.satellites();
 
-    // print GPS values
-    Serial.print("Location: ");
-    Serial.print(latitude, 7);
-    Serial.print(", ");
-    Serial.println(longitude, 7);
+      // print GPS values
+      Serial.print("Location: ");
+      Serial.print(latitude, 7);
+      Serial.print(", ");
+      Serial.println(longitude, 7);
 
-    Serial.print("Altitude: ");
-    Serial.print(Alt);
-    Serial.println("m");
+      Serial.print("Altitude: ");
+      Serial.print(Alt);
+      Serial.println("m");
 
-    Serial.print("Ground speed: ");
-    Serial.print(speed);
-    Serial.println(" km/h");
+      Serial.print("Ground speed: ");
+      Serial.print(speed);
+      Serial.println(" km/h");
 
-    Serial.print("Number of satellites: ");
-    Serial.println(satellites);
+      Serial.print("Number of satellites: ");
+      Serial.println(satellites);
 
-    Serial.println();
-  
-    Serial.print("Sending packet: ");
-    Serial.println(counter);
+      Serial.println();
+    
+      Serial.print("Sending packet: ");
+      Serial.println(counter);
 
-    // send packet
-    LoRa.beginPacket();
-    //send ID
-    LoRa.println(id);
-     //print Date & Hour
-    LoRa.print(rtc.getDay());
-    LoRa.print("/");
-    LoRa.print(rtc.getMonth());
-    LoRa.print("/");    
-    LoRa.print(rtc.getYear());
-    LoRa.print(" ");
-    LoRa.print(rtc.getHours());
-    LoRa.print(":");     
-    LoRa.print(rtc.getMinutes()); 
-    LoRa.print(":");
-    LoRa.print(rtc.getSeconds());  
-    LoRa.println();
+      // send packet
+      LoRa.beginPacket();
+      //send ID
+      LoRa.println(id);
+      //print Date & Hour
+      LoRa.print(rtc.getDay());
+      LoRa.print("/");
+      LoRa.print(rtc.getMonth());
+      LoRa.print("/");    
+      LoRa.print(rtc.getYear());
+      LoRa.print(" ");
+      LoRa.print(rtc.getHours());
+      LoRa.print(":");     
+      LoRa.print(rtc.getMinutes()); 
+      LoRa.print(":");
+      LoRa.print(rtc.getSeconds());  
+      LoRa.println();
 
-    // print C02 -SCD41
-    LoRa.print(F("CO2(ppm):"));
-    LoRa.print(SCD41.getCO2());
-    LoRa.println();
+      // print C02 -SCD41
+      LoRa.print(F("CO2(ppm):"));
+      LoRa.print(SCD41.getCO2());
+      LoRa.println();
 
-    // print HUMIDITY,TEMPERATURE -MS8607   
-    LoRa.print("Temperature: ");LoRa.print(temp.temperature); LoRa.println(" degrees C");
-    LoRa.print("Humidity: ");LoRa.print(humidity.relative_humidity); LoRa.println(" %rH");
-    LoRa.print("Pressure: ");LoRa.print(pressure.pressure); LoRa.print(" hPa");
-    LoRa.println("");
+      // print HUMIDITY,TEMPERATURE -MS8607   
+      LoRa.print("Temperature: ");LoRa.print(temp.temperature); LoRa.println(" degrees C");
+      LoRa.print("Humidity: ");LoRa.print(humidity.relative_humidity); LoRa.println(" %rH");
+      LoRa.print("Pressure: ");LoRa.print(pressure.pressure); LoRa.print(" hPa");
+      LoRa.println("");
 
-    // print GPS values
-    LoRa.print("Location: ");
-    LoRa.print(latitude, 7);
-    LoRa.print(", ");
-    LoRa.println(longitude, 7);
+      // print GPS values
+      LoRa.print("Location: ");
+      LoRa.print(latitude, 7);
+      LoRa.print(", ");
+      LoRa.println(longitude, 7);
 
-    LoRa.print("Altitude: ");
-    LoRa.print(Alt);
-    LoRa.println("m");
+      LoRa.print("Altitude: ");
+      LoRa.print(Alt);
+      LoRa.println("m");
 
-    LoRa.print("Ground speed: ");
-    LoRa.print(speed);
-    LoRa.println(" km/h");
+      LoRa.print("Ground speed: ");
+      LoRa.print(speed);
+      LoRa.println(" km/h");
 
-    LoRa.print("Number of satellites: ");
-    LoRa.println(satellites);
+      LoRa.print("Number of satellites: ");
+      LoRa.println(satellites);
 
-    LoRa.println();
-  
-    LoRa.print("Sending packet: ");
-    LoRa.println(counter);
-    LoRa.endPacket();
+      LoRa.println();
+    
+      LoRa.print("Sending packet: ");
+      LoRa.println(counter);
+      LoRa.endPacket();
 
-    counter++;
-  
-    //write in SD card
-    File dataFile = SD.open("datalog.txt", FILE_WRITE);
-    if(dataFile) {
-      dataFile.print(rtc.getDay());
-      dataFile.print("/");
-      dataFile.print(rtc.getMonth());
-      dataFile.print("/");    
-      dataFile.print(rtc.getYear());
-      dataFile.print(" ;");
-      dataFile.print(rtc.getHours());
-      dataFile.print(":");     
-      dataFile.print(rtc.getMinutes()); 
-      dataFile.print(":");
-      dataFile.print(rtc.getSeconds());
-      dataFile.print(" ;");
-      dataFile.print(SCD41.getCO2());
-      dataFile.print(" ;");
-      dataFile.print(temp.temperature);
-      dataFile.print(" ;");
-      dataFile.print(humidity.relative_humidity);
-      dataFile.print(" ;");
-      dataFile.print(pressure.pressure);
-      dataFile.print(" ;");
-      dataFile.print(latitude, 7);
-      dataFile.print(" ;");
-      dataFile.print(longitude, 7);
-      dataFile.print(" ;");
-      dataFile.print(Alt);
-      dataFile.print(" ;");
-      dataFile.print(speed);
-      dataFile.print(" ;");
-      dataFile.println(satellites);
-      dataFile.close();
+      counter++;
+    
+      //write in SD card
+      File dataFile = SD.open("datalog.txt", FILE_WRITE);
+      if(dataFile) {
+        dataFile.print(rtc.getDay());
+        dataFile.print("/");
+        dataFile.print(rtc.getMonth());
+        dataFile.print("/");    
+        dataFile.print(rtc.getYear());
+        dataFile.print(" ;");
+        dataFile.print(rtc.getHours());
+        dataFile.print(":");     
+        dataFile.print(rtc.getMinutes()); 
+        dataFile.print(":");
+        dataFile.print(rtc.getSeconds());
+        dataFile.print(" ;");
+        dataFile.print(SCD41.getCO2());
+        dataFile.print(" ;");
+        dataFile.print(temp.temperature);
+        dataFile.print(" ;");
+        dataFile.print(humidity.relative_humidity);
+        dataFile.print(" ;");
+        dataFile.print(pressure.pressure);
+        dataFile.print(" ;");
+        dataFile.print(latitude, 7);
+        dataFile.print(" ;");
+        dataFile.print(longitude, 7);
+        dataFile.print(" ;");
+        dataFile.print(Alt);
+        dataFile.print(" ;");
+        dataFile.print(speed);
+        dataFile.print(" ;");
+        dataFile.println(satellites);
+        dataFile.close();
+      }
+      else {
+        Serial.println("error opening datalog.txt");
+        while(1);
+      }
     }
-    else {
-      Serial.println("error opening datalog.txt");
-      while(1);
+    
+    if(packetSize)
+    {
+      incoming = LoRa.read();
     }
-    delay(1000);
+    
+    if (incoming == 'P') {
+      tone(5, 1000);
+      delay(1);
+      Serial.println("piazo ON");
+    }
+
+    if (incoming == 'S') {
+      noTone(5);
+      delay(1);
+      Serial.println("piazo OFF");
+    }
+    incoming = 0;
   }
 }
