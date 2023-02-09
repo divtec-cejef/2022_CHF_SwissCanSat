@@ -44,4 +44,12 @@ void loop()
     delay(500);
     command = 0;
   }
+
+  if(command == 'S')
+  {
+    Serial.println("piazo ON");
+    noTone(5);
+    delay(500);
+    command = 0;
+  }
 }
