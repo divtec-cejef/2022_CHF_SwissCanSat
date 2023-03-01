@@ -1,0 +1,21 @@
+Output: Gerber Files
+Type  : Gerber
+From  : Variant [[No Variations]] of Project [CanSat.PrjPcb]
+   Generated File[SDC41_PCB.GTO]
+   Generated File[SDC41_PCB.GTP]
+   Generated File[SDC41_PCB.GTS]
+   Generated File[SDC41_PCB.GTL]
+   Generated File[SDC41_PCB.GBL]
+   Generated File[SDC41_PCB.GBS]
+   Generated File[SDC41_PCB.GBP]
+   Generated File[SDC41_PCB.GBO]
+   Generated File[SDC41_PCB.GM13]
+   Generated File[SDC41_PCB.GM]
+   Generated File[SDC41_PCB.EXTREP]
+   Generated File[SDC41_PCB.REP]
+
+
+Files Generated   : 12
+Documents Printed : 0
+
+Finished Output Generation At 13:47:20 On 01.03.2023
