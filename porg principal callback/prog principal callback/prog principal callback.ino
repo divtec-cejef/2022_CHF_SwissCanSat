@@ -187,7 +187,6 @@ void setup() {
   //SETUP LoRa
   //================================================================================
   // override the default CS, reset, and IRQ pins (optional)
-  LoRa.setPins(csPin, resetPin, irqPin);// set CS, reset, IRQ pin
 
   if (!LoRa.begin(868E6)) {             // initialize ratio at 915 MHz
     Serial.println("LoRa init failed. Check your connections.");
@@ -216,9 +215,24 @@ void loop() {
     Alt = logOfNumber/k;
     String message = String(rtc.getDay() + '/' + rtc.getMonth() + '/' + rtc.getYear() + ' ' + rtc.getHours() + ':' + rtc.getMinutes() + ':' + rtc.getSeconds() + '|' + SCD41.getCO2() + '|' + temp.temperature + '|' + humidity.relative_humidity + '|' + pressure.pressure + '|' + GPS.latitude() + '|' + GPS.longitude() + '|' + Alt + '|' + GPS.speed() + '|' + GPS.satellites());   // send a message
     sendMessage(message);
-    Serial.println("Sending " + message);
+    Serial.println(message);
+    File dataFile = SD.open("datalog.txt", FILE_WRITE);
+    //écrire les données sur le fichier texte
+    if(dataFile) {
+    dataFile.println(message);
+
+    //fermer le fichier
+    dataFile.close();
+    }
+    else {
+      Serial.println("error opening datalog.txt");
+      while(1);
+    }
+    Serial.print("Sending ");
+    Serial.println(message);
     lastSendTime = millis();            // timestamp the message
     interval = 1000;                    // 1 second
+    message = "";
     LoRa.receive();                     // go back into receive mode
   }
 }

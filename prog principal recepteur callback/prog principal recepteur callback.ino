@@ -4,11 +4,6 @@
 #include <Wire.h>
 #include <LoRa.h>
 
-//test if the program is compactible with the board used
-#ifdef ARDUINO_SAMD_MKRWAN1300
-#error "This example is not compatible with the Arduino MKR WAN 1300 board!"
-#endif
-
 //define variables
 //LoRa
 const int csPin = 7;          // LoRa radio chip select

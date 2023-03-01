@@ -13,23 +13,24 @@ const int chipSelect = 19;
 void setup ()
 {
   Serial.begin(115200);
-////SD card setup
-//  if (!SD.begin(chipSelect)) {
-//    while (1);
-//  }
-//
-//  //ouvrir le fichier texte
-//  File dataFile = SD.open("datalog.txt", FILE_WRITE);
-//
-//  //écrire 'start' sur le fichier texte
-//  if(dataFile) {
-//    dataFile.println("start");
-//    //fermer le fichier
-//    dataFile.close();
-//  }
-//  else {
-//    while(1);
-//  }
+//SD card setup
+  if (!SD.begin(chipSelect)) {
+    while (1);
+  }
+
+  //ouvrir le fichier texte
+ File dataFile = SD.open("datalog.txt", FILE_WRITE);
+
+  //écrire 'start' sur le fichier texte
+  if(dataFile) {
+   dataFile.println("start");
+   //fermer le fichier
+   dataFile.close();
+  }
+  else {
+    Serial.println("unable to access datalog.txt");
+    while(1);
+  }
 
   //setup LoRa receiver
   while (!Serial);
@@ -48,35 +49,34 @@ void loop ()
   if(packetSize)
   {
 
-//    //ouvrir le fichier text dans la carte SD
-//    File dataFile = SD.open("datalog.txt", FILE_WRITE);//
-
-//    //si le fichier s'ouvre correctement
-//    if(dataFile) {
+    //ouvrir le fichier text dans la carte SD
+    File dataFile = SD.open("datalog.txt", FILE_WRITE);
+    //si le fichier s'ouvre correctement
+    if(dataFile) {
       //tant qu'on reçoit des données en LoRa
       while(LoRa.available())
       {
         lora = LoRa.read();
         //écrire dans le fichier les données LoRa
-//        dataFile.print(lora);
+        dataFile.print(lora);
         Serial.print(lora);
       }      
       //fermer le fichier
-//      dataFile.close();
+      dataFile.close();
 
 
-//    }
-//    else {
-//      Serial.println("unable to access 'datalog.txt' file");
-//      while(1);
-//    }
+    }
+    else {
+      Serial.println("unable to access 'datalog.txt' file");
+      while(1);
+    }
   }
 
   if(Serial.available())
   {
     String command = Serial.readStringUntil('\n'); // read string until meet newline character
 
-    if(command == "X")
+    if(command == "P")
     {
       Serial.println("sending P");
        // turn on LED

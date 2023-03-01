@@ -18,7 +18,7 @@ SCD4x SCD41;
 
 //SD card
 File myFile; 
-const int chipSelect = 4;
+const int chipSelect = 3;
 
 //RTC 
 RTCZero rtc;
@@ -36,7 +36,7 @@ int interval = 1000;
 long lastSendTime = 0;
 int packetSize = LoRa.parsePacket();
 char incoming = 0;
-char id = 'DivtechX';
+char id = '1';
 
 //altitude
 float po=1034.85;
@@ -52,6 +52,7 @@ int usb_mode = UNKNOWN_MODE;
 
 void setup()
 {
+  Serial.println("setup begin");
   //================================================================================
   //SETUP Pmic boost
   //================================================================================
@@ -82,7 +83,7 @@ void setup()
   //================================================================================
   //SETUP LED
   //================================================================================  
-  pinMode(3, OUTPUT);
+  pinMode(4, OUTPUT);
   //================================================================================
   //SETUP RTC
   //================================================================================
@@ -175,6 +176,7 @@ void setup()
     Serial.println("Starting LoRa failed!");
     while (1);
   }
+  Serial.println("setup completed");
 }
 
 void loop()
@@ -250,21 +252,8 @@ void loop()
       // send packet
       LoRa.beginPacket();
       //send ID
-      LoRa.println(id);
-      //print Date & Hour
-      LoRa.print(rtc.getDay());
-      LoRa.print("/");
-      LoRa.print(rtc.getMonth());
-      LoRa.print("/");    
-      LoRa.print(rtc.getYear());
-      LoRa.print(" ");
-      LoRa.print(rtc.getHours());
-      LoRa.print(":");     
-      LoRa.print(rtc.getMinutes()); 
-      LoRa.print(":");
-      LoRa.print(rtc.getSeconds());  
-      LoRa.println();
-
+      LoRa.print(id);
+      LoRa.print("|");      
       // print C02 -SCD41
       LoRa.print(F("CO2(ppm):"));
       LoRa.print(SCD41.getCO2());
