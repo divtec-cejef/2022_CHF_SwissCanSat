@@ -2,6 +2,17 @@
 FileName = SDC41_PCB.GBR
 AutoAperture = True
 *************************************************************
+Generating : Mechanical 13
+      File : SDC41_PCB.GM2
+
+    Adding Layer      : Mechanical 13
+
+
+Used DCodes :
+    D20
+*************************************************************
+
+*************************************************************
 Generating : Mechanical 2
       File : SDC41_PCB.GM13
 
@@ -9,7 +20,6 @@ Generating : Mechanical 2
 
 
 Used DCodes :
-    D20
     D21
 *************************************************************
 

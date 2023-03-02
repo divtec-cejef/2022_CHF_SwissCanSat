@@ -9,13 +9,14 @@ From  : Variant [[No Variations]] of Project [CanSat.PrjPcb]
    Generated File[SDC41_PCB.GBS]
    Generated File[SDC41_PCB.GBP]
    Generated File[SDC41_PCB.GBO]
+   Generated File[SDC41_PCB.GM2]
    Generated File[SDC41_PCB.GM13]
    Generated File[SDC41_PCB.GM]
    Generated File[SDC41_PCB.EXTREP]
    Generated File[SDC41_PCB.REP]
 
 
-Files Generated   : 12
+Files Generated   : 13
 Documents Printed : 0
 
-Finished Output Generation At 13:47:20 On 01.03.2023
+Finished Output Generation At 07:41:42 On 02.03.2023
