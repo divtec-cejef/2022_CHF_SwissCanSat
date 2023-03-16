@@ -32,7 +32,7 @@ void setup() {
     myFile.close();
   } else{
     Serial.println("cannot open data.txt");
-    while(1);
+    
   }
 
   //LoRa
@@ -85,7 +85,7 @@ void loop() {
       } else{
         //si le fichier data.txt ne s'ouvre pas 
         Serial.println("unable to access data.txt");
-        while(1);
+        
       }
     }
   }
