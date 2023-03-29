@@ -1,3 +1,13 @@
+#define TIMER_INTERRUPT_DEBUG         0
+#define _TIMERINTERRUPT_LOGLEVEL_     0
+// Select only one to be true for SAMD21. Must must be placed at the beginning before #include "SAMDTimerInterrupt.h"
+#define USING_TIMER_TC3         true      // Only TC3 can be used for SAMD51
+#define USING_TIMER_TC4         false     // Not to use with Servo library
+#define USING_TIMER_TC5         false
+#define USING_TIMER_TCC         false
+#define USING_TIMER_TCC1        false
+#define USING_TIMER_TCC2        false     // Don't use this, can crash on some boards
+
 #include <Wire.h>
 #include <SPI.h>
 #include <SD.h>
@@ -24,7 +34,7 @@ SCD4x SCD41;
 
 //SD card
 File myFile; 
-const int chipSelect = 4;
+const int chipSelect = 3;
 
 //RTC 
 RTCZero rtc;
@@ -38,7 +48,6 @@ const byte year = 23;
 
 //LoRa
 int counter = 0;
-int id = 5;
 
 //altitude
 float po=1008.15;
@@ -68,11 +77,11 @@ void erreur()
     case 0: //No error
       if(count==0)
       {
-        digitalWrite(LED_BUILTIN, 0);
+        digitalWrite(4, 0);
       }
       if(count=3) 
       {
-        digitalWrite(LED_BUILTIN, 1);
+        digitalWrite(4, 1);
       }
       
       if(count==5)
@@ -83,11 +92,11 @@ void erreur()
     case 1: //error carte sd
       if(count < 1) 
       {
-        digitalWrite(LED_BUILTIN, 0);
+        digitalWrite(4, 0);
       } 
       else if (count < 5)
       {
-        digitalWrite(LED_BUILTIN, !digitalRead(LED_BUILTIN));        
+        digitalWrite(4, !digitalRead(4));        
       }                 
 
       else
@@ -97,11 +106,11 @@ void erreur()
     case 2: //error scd41
       if(count < 2) 
       {
-        digitalWrite(LED_BUILTIN, 0);
+        digitalWrite(4, 0);
       } 
       else if (count < 6)
       {
-        digitalWrite(LED_BUILTIN, !digitalRead(LED_BUILTIN));        
+        digitalWrite(4, !digitalRead(4));        
       }                 
 
       else
@@ -111,11 +120,11 @@ void erreur()
     case 3: //error ms8607
       if(count < 3) 
       {
-        digitalWrite(LED_BUILTIN, 0);
+        digitalWrite(4, 0);
       } 
       else if (count < 7)
       {
-        digitalWrite(LED_BUILTIN, !digitalRead(LED_BUILTIN));        
+        digitalWrite(4, !digitalRead(4));        
       }                 
       else
         count=0;      
@@ -124,11 +133,11 @@ void erreur()
     case 4 : //error gps
       if(count < 4) 
       {
-        digitalWrite(LED_BUILTIN, 0);
+        digitalWrite(4, 0);
       } 
       else if (count < 8)
       {
-        digitalWrite(LED_BUILTIN, !digitalRead(LED_BUILTIN));        
+        digitalWrite(4, !digitalRead(4));        
       }                 
 
       else
@@ -138,11 +147,11 @@ void erreur()
     case 5: // error LoRa
       if(count < 5) 
       {
-        digitalWrite(LED_BUILTIN, 0);
+        digitalWrite(4, 0);
       } 
       else if (count < 9)
       {
-        digitalWrite(LED_BUILTIN, !digitalRead(LED_BUILTIN));        
+        digitalWrite(4, !digitalRead(4));        
       }                 
 
       else
@@ -184,9 +193,11 @@ void setup()
   delay(2000);
 
   //================================================================================
-  //SETUP LED
+  //SETUP LED et buzzer
   //================================================================================  
   pinMode(4, OUTPUT);
+  pinMode(5, OUTPUT);
+
   //================================================================================
   //SETUP RTC
   //================================================================================
@@ -201,7 +212,9 @@ void setup()
     Serial.println("Card failed, or not present");
     error=1;
   }
+  else{
   Serial.println("card initialized.");
+  }
   
   File dataFile = SD.open("datalog.txt", FILE_WRITE);
 
@@ -222,7 +235,9 @@ void setup()
     Serial.println(F("Sensor not detected. Please check wiring. Freezing..."));
     error=2;
   }
+  else{
   Serial.println("SCD41 Found!");
+  }  
   //================================================================================
   //SETUP MS8607
   //================================================================================
@@ -233,7 +248,9 @@ void setup()
     Serial.println("Failed to find MS8607 chip");
     error=3;
   }
+  else{
   Serial.println("MS8607 Found!");
+  }
 
   ms8607.setHumidityResolution(MS8607_HUMIDITY_RESOLUTION_OSR_8b);
   Serial.print("Humidity resolution set to ");
@@ -262,7 +279,9 @@ void setup()
     Serial.println("Failed to initialize GPS!");
     error=4;
   }
+  else{
   Serial.println("GPS Found!");
+  }
   //================================================================================
   //SETUP LoRa
   //================================================================================
@@ -272,6 +291,11 @@ void setup()
     Serial.println("Starting LoRa failed!");
     error=5;
   }
+  else{
+    Serial.println("LoRa ok!");
+  }
+
+  LoRa.setSpreadingFactor(10);           // ranges from 6-12,default 7 see API docs
   //================================================================================
   //SETUP callback
   //================================================================================
@@ -290,11 +314,14 @@ void setup()
 
 void loop()
 { 
-  Serial.println("ok!");
-  
-  if (GPS.available()) {    
+  if (GPS.available()) {     
     //allumer LED
     digitalWrite(4, HIGH);
+
+    //allumer buzzer
+    //if(Alt<500){
+    //tone (5, 4000); // allume le buzzer actif arduino
+    //}
   
     //print Date & Hour
     Serial.print(rtc.getDay());
@@ -358,8 +385,6 @@ void loop()
     LoRa.beginPacket();
     
     LoRa.print("|");
-    LoRa.print(id);
-    LoRa.print("|");
     LoRa.print(Alt);
     LoRa.print("|");
     LoRa.print(SCD41.getCO2());
@@ -413,6 +438,5 @@ void loop()
       dataFile.println(satellites);
       dataFile.close();
     }
-    delay(500);
   }
 }

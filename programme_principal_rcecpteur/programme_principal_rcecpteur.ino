@@ -40,6 +40,8 @@ void setup() {
     Serial.println("Starting LoRa failed!");
     while (1);
   }
+  
+  LoRa.setSpreadingFactor(8);  
 
   //Bouton
   pinMode(6, INPUT);
@@ -79,13 +81,12 @@ void loop() {
           //écrire le LoRa dans la carte SD
           myFile.print(lora);
         }
-
+//        Serial.println("RSSI: " + String(LoRa.packetRssi()));        
         //fermer le fichier data.txt
         myFile.close();
       } else{
         //si le fichier data.txt ne s'ouvre pas 
         Serial.println("unable to access data.txt");
-        
       }
     }
   }
@@ -111,7 +112,6 @@ void loop() {
           //délai pour pas tout casser
           delay(1);
         }
-        Serial.println();
         //fermer le fichier data.txt
         myFile.close();
 
