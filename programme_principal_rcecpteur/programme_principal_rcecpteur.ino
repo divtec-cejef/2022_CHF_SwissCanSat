@@ -41,7 +41,7 @@ void setup() {
     while (1);
   }
   
-  LoRa.setSpreadingFactor(8);  
+  LoRa.setSpreadingFactor(10);  
 
   //Bouton
   pinMode(6, INPUT);
@@ -81,7 +81,7 @@ void loop() {
           //écrire le LoRa dans la carte SD
           myFile.print(lora);
         }
-//        Serial.println("RSSI: " + String(LoRa.packetRssi()));        
+        Serial.println("RSSI: " + String(LoRa.packetRssi()));        
         //fermer le fichier data.txt
         myFile.close();
       } else{

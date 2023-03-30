@@ -21,6 +21,7 @@
 #include <Arduino_PMIC.h>
 #include <SAMDTimerInterrupt.h>
 #include <SAMD_ISR_Timer.h>
+#include <wdt_samd21.h>
 
 SAMD_ISR_Timer ISR_Timer;
 SAMDTimer ITimer(TIMER_TC3);
@@ -35,6 +36,15 @@ SCD4x SCD41;
 //SD card
 File myFile; 
 const int chipSelect = 3;
+
+//GPS 
+int temp=0;
+int timetosend=0;
+float latitude=0;
+float longitude=0;
+float altitude=0;
+float speed=0;
+int   satellites=0;
 
 //RTC 
 RTCZero rtc;
@@ -71,6 +81,12 @@ void TimerHandler(void)
 
 void erreur()
 {
+
+  temp++;
+  if(temp>6){
+    timetosend=1;    
+    temp=0;
+  }
   static int count=0;
   switch (error)
   {
@@ -165,7 +181,7 @@ void erreur()
 
 void setup()
 {
-  Serial.begin(9600);
+  Serial.begin(115200);
   //================================================================================
   //SETUP Pmic boost
   //================================================================================
@@ -309,14 +325,27 @@ void setup()
     // Just to demonstrate, don't use too many ISR Timers if not absolutely necessary
     // You can use up to 16 timer for each ISR_Timer
     ISR_Timer.setInterval(TIMER_INTERVAL_1S,  erreur);
-  
+    
+  //================================================================================
+  //SETUP watchdog
+  //================================================================================
+   
+  wdt_init ( WDT_CONFIG_PER_4K );
 }
 
 void loop()
 { 
-  if (GPS.available()) {     
-    //allumer LED
-    digitalWrite(4, HIGH);
+  if (GPS.available() || timetosend==1) {   
+    wdt_reset();
+    temp=0;
+    timetosend=0;
+    latitude   = GPS.latitude();
+    longitude  = GPS.longitude();
+    altitude   = GPS.altitude();
+    speed      = GPS.speed();
+    satellites = GPS.satellites(); 
+ 
+    tone (5, 1000); // allume le buzzer actif arduino
 
     //allumer buzzer
     //if(Alt<500){
@@ -354,14 +383,7 @@ void loop()
     P=pressure.pressure/po;
     logOfNumber = log(P);
     Alt = logOfNumber/k;
-
-    //  print GPS -ASX00017
-    float latitude   = GPS.latitude();
-    float longitude  = GPS.longitude();
-    float altitude   = GPS.altitude();
-    float speed      = GPS.speed();
-    int   satellites = GPS.satellites();
-
+    
     // print GPS values
     Serial.print("Location: ");
     Serial.print(latitude, 7);
@@ -400,7 +422,7 @@ void loop()
     LoRa.print(pressure.pressure); 
     LoRa.println("|");
 
-    LoRa.endPacket();
+    LoRa.endPacket(true);
 
     counter++;
   
@@ -438,5 +460,6 @@ void loop()
       dataFile.println(satellites);
       dataFile.close();
     }
-  }
-}
+    noTone (5); // allume le buzzer actif arduino
+  }     
+} 
